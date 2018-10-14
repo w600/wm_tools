@@ -150,7 +150,7 @@ namespace wm_tools
                     Assembly assembly = Assembly.GetExecutingAssembly();
 //                    var version = assembly.GetName().Version;
                     Console.WriteLine("wm_tools {0} for w600", Version);
-                    Console.WriteLine("write by thingsturn");
+                    Console.WriteLine("written by thingsturn");
                     Console.WriteLine("compile @ {0}", System.IO.File.GetLastWriteTime(assembly.Location).ToString());
                     break;
             }
