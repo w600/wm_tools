@@ -19,7 +19,7 @@ namespace wm_tools
             VERSION ,       //read the wm_tools version
         };
         
-        static string Version = "v0.2";
+        static string Version = "v0.3";
         static ACTION_ARGS action_arg = ACTION_ARGS.NULL;
         
         private static int Main(string[] args)
@@ -33,11 +33,10 @@ namespace wm_tools
             if (arguments.Has("-h"))
             {
                 Console.WriteLine("usage: \r\n" +
-                                  "\twm_tools.exe [-h] [-p] [-b] {write_flash, erase_flash}\r\n" +
+                                  "\twm_tools.exe [-h] [-p] [-b] {write_flash, erase_flash, version}\r\n" +
                                   "examples: \r\n" +
-                                  "\twm_tools.exe  -p COM6 -b 115200 erase_flash\r\n" +
-                                  "\twm_tools.exe  -p COM6 -b 115200 write_flash wm600_sec.img");
-
+                                  "\twm_tools.exe  -p COM6 -b 2000000 erase_flash\r\n" +
+                                  "\twm_tools.exe  -p COM6 -b 2000000 write_flash wm600_sec.img");
                 return 0;
             }
             
@@ -103,10 +102,10 @@ namespace wm_tools
                 case ACTION_ARGS.NULL:
                     Console.WriteLine("error: invalid argument");
                     Console.WriteLine("usage: \r\n" +
-                                  "\twm_tools.exe [-h] [-p] [-b] {write_flash, erase_flash}\r\n" +
+                                  "\twm_tools.exe [-h] [-p] [-b] {write_flash, erase_flash, version}\r\n" +
                                   "examples: \r\n" +
-                                  "\twm_tools.exe  -p COM6 -b 115200 erase_flash\r\n" +
-                                  "\twm_tools.exe  -p COM6 -b 115200 write_flash wm600_sec.img");
+                                  "\twm_tools.exe  -p COM6 -b 2000000 erase_flash\r\n" +
+                                  "\twm_tools.exe  -p COM6 -b 2000000 write_flash wm600_sec.img");
                     break;
                 case ACTION_ARGS.DOWNLOAD:
                     Console.WriteLine("need to download ...");
@@ -124,23 +123,36 @@ namespace wm_tools
                         Console.WriteLine("Error firmware path !");
                         return -1;
                     }
-                    var controller = new W600Controller();
+                    var controller_write = new W600Controller();
                     try
                     {
-                        controller.Open(portname);
+                        controller_write.Open(portname);
                         Console.WriteLine("opend {0} !", portname);
-                        controller.Sync_To_Download(baudrate_index);
-                        controller.LoadFirmware(filepath);
+                        controller_write.Sync_To_Download(baudrate_index);
+                        controller_write.LoadFirmware(filepath);
                         Console.WriteLine("All done.");
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e.Message);
-                        return 1;
+                        return -1;
                     }
                     break;
                 case ACTION_ARGS.ERASE:
                     Console.WriteLine("need to erase ...");
+                    var controller_erase = new W600Controller();
+                    try
+                    {
+                        controller_erase.Open(portname);
+                        Console.WriteLine("opend {0} !", portname);
+                        controller_erase.Sync_To_Erase();
+                        Console.WriteLine("All done.");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        return -1;
+                    }
                     break;
                 case ACTION_ARGS.CHIP_ID:
                     break;
@@ -148,7 +160,6 @@ namespace wm_tools
                     break;
                 case ACTION_ARGS.VERSION:
                     Assembly assembly = Assembly.GetExecutingAssembly();
-//                    var version = assembly.GetName().Version;
                     Console.WriteLine("wm_tools {0} for w600", Version);
                     Console.WriteLine("written by thingsturn");
                     Console.WriteLine("compile @ {0}", System.IO.File.GetLastWriteTime(assembly.Location).ToString());

@@ -33,9 +33,9 @@ wm_tools 是一个 w600 的 ROM 工具，可以实现 w600 的固件烧录，固
 
     wm_tools.exe  -h
 
-    wm_tools.exe  -p COM6 -b 115200 erase_flash
+    wm_tools.exe  -p COM6 -b 2000000 erase_flash
 
-    wm_tools.exe  -p COM6 -b 115200 write_flash wm600_sec.img
+    wm_tools.exe  -p COM6 -b 2000000 write_flash wm600_sec.img
 
 ## 固件烧录
   `下载需进入下载模式或者secboot模式`
@@ -44,15 +44,13 @@ wm_tools 是一个 w600 的 ROM 工具，可以实现 w600 的固件烧录，固
 
   示例：
 
-​    wm_tools.exe  -p COM6 -b 115200 write_flash wm600_sec.img
+​    wm_tools.exe  -p COM6 -b 2000000 write_flash wm600_sec.img
 
 ## 固件擦除
 
-  `目前仅支持在下载模式中使用`
-
  示例：
 
-​    wm_tools.exe  -p COM6 -b 115200 erase_flash
+​    wm_tools.exe  -p COM6 erase_flash
 
 ## 固件处理
 
