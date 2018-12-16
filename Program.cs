@@ -19,7 +19,7 @@ namespace wm_tools
             VERSION ,       //read the wm_tools version
         };
         
-        static string Version = "v0.3";
+        static string Version = "v0.31";
         static ACTION_ARGS action_arg = ACTION_ARGS.NULL;
         
         private static int Main(string[] args)

@@ -31,18 +31,6 @@ namespace wm_tools
         // http://www.codeproject.com/Messages/3692563/Get-correct-driver-name-from-Device-management-ass.aspx
         // http://geekswithblogs.net/PsychoCoder/archive/2008/01/25/using_wmi_in_csharp.aspx
 
-        private static SerialPort OpenW600SerialPort()
-        {
-            var searcher =
-                new ManagementObjectSearcher(
-                    "select DeviceID,MaxBaudRate from Win32_SerialPort where Description = \"GHI Boot Loader Interface\"");
-            foreach (ManagementBaseObject obj in searcher.Get())
-            {
-                return new SerialPort((string) obj["DeviceID"], (int) (uint) obj["MaxBaudRate"]);
-            }
-            throw new Exception("Unable to find FEZ device. Is it in bootloader mode?");
-        }
-
         private void UpdateMsg(string value)
         {
             Console.Write(value);
@@ -278,6 +266,8 @@ namespace wm_tools
         internal void LoadFirmware(string filename)
         {
             // Load the file into a memory block
+            _w600Port.WriteTimeout = 1000; /*Write time out*/
+            _w600Port.ReadTimeout = 1000;
             byte[] data = ReadFileIntoByteArray(filename);
 
             // Set up an XMODEM object
