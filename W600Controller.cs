@@ -73,16 +73,18 @@ namespace wm_tools
                     case DL_STATE.DL_SYNC_START:
                         UpdateMsg("reset device ");
                         //执行重启
+                        _w600Port.DiscardInBuffer();
                         _w600Port.RtsEnable = true;
-                        System.Threading.Thread.Sleep(50);
+                        System.Threading.Thread.Sleep(20);
                          _w600Port.RtsEnable = false;
-                        _w600Port.WriteTimeout = 200;
-                        _w600Port.ReadTimeout = 200;
+                        _w600Port.WriteTimeout = 50;
+                        _w600Port.ReadTimeout = 50;
                         count_c = 0;
                         dl_state = DL_STATE.DL_SYNC_CCCCC;
                         break;
                     case DL_STATE.DL_SYNC_CCCCC:
                         //检查是否接收到CCCC
+//                        UpdateMsg("check reciver:");
                          int c = 0x00;
                          try { c = _w600Port.ReadByte(); }
                          catch { c = 0x00; }
@@ -104,7 +106,7 @@ namespace wm_tools
                          }
                          else 
                          {
-                             _w600Port.DiscardInBuffer();
+//                             _w600Port.DiscardInBuffer();
                          }
                         break;
                     case DL_STATE.DL_CHANGE_BAUD:
@@ -160,7 +162,7 @@ namespace wm_tools
         {
             int count_c = 0;
             int count_p = 0;
-//            UpdateMsg("start sync !!!! \r\n");
+            UpdateMsg("start sync !!!! \r\n");
             bool is_synced = false;
             dl_state = DL_STATE.DL_SYNC_START;
             while(is_synced == false)
@@ -178,17 +180,18 @@ namespace wm_tools
                     case DL_STATE.DL_SYNC_START:
                         UpdateMsg("reset device ");
                         //执行重启
+                        _w600Port.DiscardInBuffer();
                         _w600Port.RtsEnable = true;
                         System.Threading.Thread.Sleep(50);
                          _w600Port.RtsEnable = false;
-                        _w600Port.WriteTimeout = 200;
-                        _w600Port.ReadTimeout = 200;
+                        _w600Port.WriteTimeout = 50;
+                        _w600Port.ReadTimeout = 50;
                         
                         dl_state = DL_STATE.DL_SYNC_CCCCC;
                         break;
                     case DL_STATE.DL_SYNC_CCCCC:
                         //检查是否接收到CCCC
-//                        UpdateMsg("check reciver");
+//                        UpdateMsg("check reciver\r\n");
                          int c = 0x00;
                          try { c = _w600Port.ReadByte(); }
                          catch { c = 0x00; }
@@ -215,7 +218,7 @@ namespace wm_tools
                          }
                          else 
                          {
-                             _w600Port.DiscardInBuffer();
+//                             _w600Port.DiscardInBuffer();
                          }
                         break;
                     case DL_STATE.DL_ERASE_SECBOOT:
@@ -250,7 +253,7 @@ namespace wm_tools
                          }
                          else 
                          {
-                             _w600Port.DiscardInBuffer();
+//                             _w600Port.DiscardInBuffer();
                          }
                         break;
                     case DL_STATE.DL_ERASE_SUCCESS:
