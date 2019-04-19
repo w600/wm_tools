@@ -57,12 +57,15 @@ namespace wm_tools
         {
             int count_c = 0;
 //            int count_p = 0;
-            dl_state = DL_STATE.DL_SYNC_START;
+            _w600Port.DiscardInBuffer();
+            _w600Port.WriteTimeout = 20;
+            _w600Port.ReadTimeout = 20;
+			UpdateMsg("\r\nstart connect device");
+            DL_STATE dl_state = DL_STATE.DL_SYNC_START;
             bool is_synced = false;
+            int timeout = 50;
             while(is_synced == false)
             {
-                System.Threading.Thread.Sleep(20);
-
                 if(dl_state == DL_STATE.DL_SYNC_START || dl_state == DL_STATE.DL_SYNC_CCCCC)
                 {
                     _w600Port.Write(new[] {(byte) 0x1B}, 0, 1);                  
@@ -71,22 +74,56 @@ namespace wm_tools
                 switch(dl_state)
                 {
                     case DL_STATE.DL_SYNC_START:
-                        UpdateMsg("reset device ");
-                        //执行重启
-                        _w600Port.DiscardInBuffer();
-                        _w600Port.RtsEnable = true;
-                        System.Threading.Thread.Sleep(20);
-                         _w600Port.RtsEnable = false;
-                        _w600Port.WriteTimeout = 50;
-                        _w600Port.ReadTimeout = 50;
-                        count_c = 0;
-                        dl_state = DL_STATE.DL_SYNC_CCCCC;
+                        byte ccc = 0x00;
+                         try { ccc = (byte) _w600Port.ReadByte(); }
+                         catch { ccc = 0x00; }
+        
+                         if (ccc == 0x43)         //CCC
+                         {
+                         	timeout = 50;	//续命
+                            UpdateMsg("C");    
+                            if(count_c ++ >= 2)
+                             {
+                                UpdateMsg("\r\nsync success, ");
+                                count_c = 0;
+                                dl_state = DL_STATE.DL_CHANGE_BAUD; 
+                                break;
+                             }
+                         }
+                         else if(ccc == 0x50)     //PPP
+                         {
+                         	count_c = 0;
+                         	timeout = 50;	//续命
+                         	_w600Port.DiscardInBuffer();
+                             UpdateMsg("P");
+                             break;
+                         }
+                         else
+                         {
+                         	if(ccc != 0x00)
+                         	{
+                         		count_c = 0;
+                         	}
+                         	
+                         	_w600Port.DiscardInBuffer();
+                         	if(timeout -- <= 0)
+                         	{
+                         		timeout = 50;		//续命
+                         		UpdateMsg("\r\ntimeout, try to reset device");
+		                        _w600Port.RtsEnable = true;
+		                        System.Threading.Thread.Sleep(20);
+	                         	_w600Port.RtsEnable = false;
+	             	            _w600Port.ReadTimeout = 20;
+		                        dl_state = DL_STATE.DL_SYNC_CCCCC;
+		                        break;
+                         	}
+                         }
+                         dl_state = DL_STATE.DL_SYNC_START; 
                         break;
                     case DL_STATE.DL_SYNC_CCCCC:
                         //检查是否接收到CCCC
-//                        UpdateMsg("check reciver:");
-                         int c = 0x00;
-                         try { c = _w600Port.ReadByte(); }
+                         byte c = 0x00;
+                         try { c = (byte) _w600Port.ReadByte(); }
                          catch { c = 0x00; }
         
                          if (c == 0x43)         //CCC
@@ -94,6 +131,7 @@ namespace wm_tools
                             UpdateMsg("C");    
                             if(count_c ++ >= 2)
                              {
+                                UpdateMsg("\r\nsync success, ");
                                 count_c = 0;
                                 dl_state = DL_STATE.DL_CHANGE_BAUD; 
                                 break;
@@ -101,13 +139,13 @@ namespace wm_tools
                          }
                          else if(c == 0x50)     //PPP
                          {
-                             count_c = 0;
-                             UpdateMsg("P");
+                     		count_c = 0;
+                         	UpdateMsg("P");
                          }
-                         else 
-                         {
-//                             _w600Port.DiscardInBuffer();
-                         }
+                         else if(c != 0x00)
+                     	{
+                     		count_c = 0;
+                     	}
                         break;
                     case DL_STATE.DL_CHANGE_BAUD:
 
@@ -147,8 +185,6 @@ namespace wm_tools
                                 UpdateMsg("\r\nuse default baud 115200!\r\n");
                                 break;
                         }
-
-
                         dl_state = DL_STATE.DL_SYNC_START;
                         is_synced = true;
                         break;
